@@ -108,12 +108,21 @@ def csv_to_list(csv_path:str)->list:
 
 
 
-def main():
+def main(args=None):
+    
     parser = argparse.ArgumentParser(description="Extract elevation from DEM and add to points CSV.")
     parser.add_argument('dem_file', type=str, help="Path to the DEM file")
     parser.add_argument('csv_path', type=str, help="path to csv files")
+    parser.add_argument('output_path', type=str, help="path to save csv files")
 
-    args = parser.parse_args()
+    # 當args並不是用命令列開啟時，透過輸入args自訂參數
+
+    if args is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(args)
+    
+
 
     # read csv
     x_coords,y_coords,elev,orignal_dem = csv_to_list(args.csv_path)
@@ -132,7 +141,7 @@ def main():
 
     answer_df['elev'] = new_elev
     answer_df['extracted_dem'] = extracted_dem 
-    output_path = 'C:\\Users\\USER\\Documents\\GitHub\\collection\\dem_extracter\\test_data\\answer_data.csv'
+    output_path = args.output_path
     answer_df .to_csv(output_path, index=False)
     print(f"Output saved to {output_path}")
 
