@@ -14,16 +14,24 @@ import os
 
 # 設定結果的匯出路徑
 
-def set_output_path(custom_path=None):
-    if custom_path:
-        # Use the user-defined path if provided
-        output_path = custom_path
+def set_output_path(dir_path,filename=None): # 必田參數在前，選填參數在後
+    if filename:
+        # Check if the filename ends with .csv
+        if not filename.endswith('.csv'):
+            filename = filename + '.csv'
+            #print("auto add .csv")
+
+        output_dir = os.path.dirname(dir_path) # 需要解決路徑問題
+        costom_path = os.path.join(output_dir, filename) # 預設檔名與csvfile相同
+        # 自訂路徑功能目前尚未添加
+        output_path = costom_path
+        #print("create costom filename")
     else:
         # Default to the same directory as csvpath
-        output_path = os.path.dirname(csvpath)
-    
-    # Ensure the output path ends with a directory separator
-    output_path = os.path.join(output_path, 'answer_data.csv')
+        output_path = os.path.dirname(dir_path)
+        # Ensure the output path ends with a directory separator
+        output_path = os.path.join(output_path, 'answer_data.csv')
+        #print("create default filename")
     
     return output_path
 
@@ -45,24 +53,19 @@ def main(args=None):
     from extract_dem import main as extract_dem_main
 
     filename = input("please insert filename for the output file (example: 'answer_data.csv'):")
-    if filename :
-        output_dir = os.path.dirname(csvpath) # 需要解決路徑問題
-        costom_path = os.path.join(output_dir, filename)
-    else:
-        costom_path = set_output_path() #預設路徑
+    output_path = set_output_path(csvpath,filename)
 
-    a = [args.dem_file,args.csv_path,costom_path]
+    a = [args.dem_file,args.csv_path,output_path]
     extract_dem_main(a)
 
 '''
-if __name__ == "__main__":
+if __name__ == "__main__"
     main()
 '''
 
 dem = r"C:\Users\USER\Documents\GitHub\collection\dem_extracter\test_data\Dali_2m_H.tif"
-csvpath = r"C:\Users\USER\Documents\GitHub\collection\dem_extracter\test_data\test_data.csv"
-costom_path = r'C:\Users\USER\Documents\GitHub\collection\dem_extracter\test_data\costom_data.csv'
-default_path = set_output_path()
+csvpath = r"C:\Users\USER\Documents\GitHub\collection\dem_extracter\test_data\lichi_example.csv"
+
 aa = [dem,csvpath]
 main(aa)
 
