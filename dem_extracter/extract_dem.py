@@ -8,10 +8,6 @@ import pandas as pd
 
 # input format
 
-
-    
-    
-
 def extractElevation(path:str,x_coords:list[float],y_coords:list[float])->list[float|int]:
     '''
     this methon can sample the values from DEM for given points.
@@ -90,6 +86,27 @@ def convertToTerrain(elev,orignal_dem,extracted_dem):
     
     return new_elev # list
 
+def csv_to_list(csv_path:str)->list:
+    '''
+    this function can read csv file and return a list of data
+
+    Parameters:
+    -----
+    csv_path:str path of csv file
+
+    Output:
+    -----
+    data:list list of data
+    '''
+    pts = pd.read_csv(csv_path)
+    x_coords = pts['x'].tolist()
+    y_coords = pts['y'].tolist()
+    elev = pts['elev'].tolist()
+    orignal_dem = pts['dem'].tolist()
+    return x_coords,y_coords,elev,orignal_dem
+
+
+
 
 def main():
     parser = argparse.ArgumentParser(description="Extract elevation from DEM and add to points CSV.")
@@ -99,19 +116,25 @@ def main():
     args = parser.parse_args()
 
     # read csv
-    pts = pd.read_csv(args.csv_path)
-    x_coords = pts['x'].tolist()
-    y_coords = pts['y'].tolist()
+    x_coords,y_coords,elev,orignal_dem = csv_to_list(args.csv_path)
+    
+    ## return x_coords,y_coords,elev,orignal_dem
+
     extracted_dem = extractElevation(args.dem_file,x_coords,y_coords)
+    
+    # return a list of extracted_dem
 
-    elev = pts['elev'].tolist()
-    orignal_dem = pts['dem'].tolist()
     new_elev = convertToTerrain(elev,orignal_dem,extracted_dem)
+    #return a list of revised elev
+    
+    data = list(zip(x_coords, y_coords, elev, orignal_dem))
+    answer_df = pd.DataFrame(data, columns=['x_coords', 'y_coords', 'elev', 'orignal_dem'])
 
-    pts['elev'] = new_elev
-    pts['extracted_dem'] = extracted_dem 
+    answer_df['elev'] = new_elev
+    answer_df['extracted_dem'] = extracted_dem 
     output_path = 'C:\\Users\\USER\\Documents\\GitHub\\collection\\dem_extracter\\test_data\\answer_data.csv'
-    pts.to_csv(output_path, index=False)
+    answer_df .to_csv(output_path, index=False)
+    print(f"Output saved to {output_path}")
 
 
 if __name__ == "__main__":
