@@ -3,9 +3,9 @@ This is a tool for revise hight for the lichi UAV mission
 
 <br>needed file as follow:
 
-**dem.tif**: a DEM(Digital Elevation/Terrain Model) file contains your mission area, file formet: .tif
+**dem.tif** ：a DEM(Digital Elevation/Terrain Model) file contains your mission area, file formet: .tif
 
-**waypoints.csv** your mission waypoints calculated by [lichi](https://cc8.pl/download/atomicmapper.html) 
+**waypoints.csv** ：your mission waypoints calculated by [lichi](https://cc8.pl/download/atomicmapper.html) 
 
 ## Environments
 
