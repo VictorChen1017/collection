@@ -38,14 +38,6 @@ def trans_input(csvpath):
     geo_df = lichi_df.iloc[:,0:3]
     geo_df = geo_df.rename(columns={"latitude": "lat", "longitude": "lon", "altitude(m)": "alt"})
     print("Input waypoint successfully")
-    return geo_df
+    return geo_df,lichi_df 
     
 
-'''
-csvpath = lichi_example.csv
-geo_df = trans_input(csvpath)
-x_coord, y_coord =  WGS84toEPSG4326(geo_df)
-print(x_coord)
-print(y_coord)
-
-'''

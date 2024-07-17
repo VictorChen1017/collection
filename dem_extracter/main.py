@@ -35,37 +35,76 @@ def set_output_path(dir_path,filename=None): # 必田參數在前，選填參數
     
     return output_path
 
+def output_file(lichi_df,output_path,new_alt ,x_coord, y_coord, elev):
+    
+    
+    # 將elevation替換成new_alt
+    lichi_df['altitude(m)'] = new_alt
 
+    # 將elev, xcords, ycords 加入新的csv中
+    lichi_df['elev'] = elev
+    lichi_df['3826_x_coords'] = x_coord
+    lichi_df['3826_y_coords'] = y_coord
+
+    lichi_df.to_csv(output_path, index=False)
+    print(f"Output saved to {output_path}")
 
 def main(args=None):
+
+    # 命令列參數設定
 
     parser = argparse.ArgumentParser(description="input files to revise flight hight from lichi mission.")
     parser.add_argument('dem_file', type=str, help="Path to the DEM file")
     parser.add_argument('csv_path', type=str, help="path to csv files")
 
+    ## 程式import調用設定
     if args is None:
         args = parser.parse_args()
     else:
         args = parser.parse_args(args)
 
+    
+    # 將csv檔案轉換成geodataframe，wgs84轉換成epsg3826
+
+    import trans
+        
+    '''
+    Input: csv_path
+    Output: xccord, ycoord, alt
+    '''
+    csvpath = args.csv_path
+    geo_df,lichi_df  = trans.trans_input(csvpath)
+    x_coord, y_coord =  trans.WGS84toEPSG4326(geo_df) ## 輸出格式為list
+    alt = geo_df["alt"].tolist() # 輸出格式為list
+
+    # 透過dem資料修正航高
+
+    '''
+    Input: dem_path, x_coord, y_coord, alt
+    Output: elev,new_alt
+    '''
+
+    from extract_dem import extracter as ex
+    
+    dem_path = args.dem_file
+    elev,new_alt = ex(dem_path,x_coord,y_coord,alt)
 
 
-    from extract_dem import main as extract_dem_main
-
+    # 設定匯出路徑
+    '''
+    Input: csv_path, filename
+    Output: output_path
+    '''
     filename = input("please insert filename for the output file (example: 'answer_data.csv'):")
     output_path = set_output_path(csvpath,filename)
 
-    a = [args.dem_file,args.csv_path,output_path]
-    extract_dem_main(a)
 
-'''
-if __name__ == "__main__"
+    # 匯出檔案
+    # lichi_df  原檔
+    output_file(lichi_df,output_path,new_alt ,x_coord, y_coord, elev)
+
+if __name__ == '__main__':
     main()
-'''
 
-dem = r"C:\Users\USER\Documents\GitHub\collection\dem_extracter\test_data\Dali_2m_H.tif"
-csvpath = r"C:\Users\USER\Documents\GitHub\collection\dem_extracter\test_data\lichi_example.csv"
 
-aa = [dem,csvpath]
-main(aa)
 

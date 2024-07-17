@@ -8,13 +8,13 @@ import pandas as pd
 
 # input format
 
-def extractElevation(path:str,x_coords:list[float],y_coords:list[float])->list[float|int]:
+def extractElevation(dem_path:str,x_coords:list[float],y_coords:list[float])->list[float|int]:
     '''
     this methon can sample the values from DEM for given points.
     
     Parameters:
     -----
-    path:str path of DEM dataset
+    dem_path:str path of DEM dataset
     x_coords:list[float] x_coordinates of points
     y_coords:list[float] y_coordinates of points
 
@@ -31,7 +31,7 @@ def extractElevation(path:str,x_coords:list[float],y_coords:list[float])->list[f
     # this allows GDAL to parse raster datasets
     gdal.UseExceptions()
     try:
-        src_ds = gdal.Open(path)
+        src_ds = gdal.Open(dem_path)
     except RuntimeError as e:
         print('Unable to open INPUT.tif')
         print(e)
@@ -75,79 +75,39 @@ def extractElevation(path:str,x_coords:list[float],y_coords:list[float])->list[f
     return elev
 
 # correct hight for the way points
-def convertToTerrain(elev,orignal_dem,extracted_dem):
-    # elev 原始飛行高度,list
-    # orignal_dem 原始dem,list
-    new_elev = []
-    for i in range(0,len(elev)):
-        delta_hight = extracted_dem[i] - orignal_dem[i]
-        elev[i] = elev[i] + delta_hight
-        new_elev.append(elev[i]) ## calculate difference between orignal hight dem and way pts
+def convertToTerrain(alt:list[float],elev:list[float])->list[float]:
+    # alt 原始飛行高度,list
+    # elev 地形高度,list
+    new_alt = []
+    for i in range(0,len(alt)):
+        # 新高度=原高度+地形高度
+        alt[i] = alt[i] + elev[i]
+        new_alt.append(alt[i]) ## calculate difference between orignal hight dem and way pts
     
-    return new_elev # list
-
-def csv_to_list(csv_path:str)->list:
-    '''
-    this function can read csv file and return a list of data
-
-    Parameters:
-    -----
-    csv_path:str path of csv file
-
-    Output:
-    -----
-    data:list list of data
-    '''
-    pts = pd.read_csv(csv_path)
-    x_coords = pts['x'].tolist()
-    y_coords = pts['y'].tolist()
-    elev = pts['elev'].tolist()
-    orignal_dem = pts['dem'].tolist()
-    return x_coords,y_coords,elev,orignal_dem
+    return new_alt # list
 
 
 
 
-def main(args=None):
+
+def extracter(dem_path,x_coords,y_coords,alt):
+    # dem_path: str, path to DEM file
+    # x_coords: list[float], x coordinates of points
+    # y_coords: list[float], y coordinates of points
+    # alt: list[float], original flighthight of points
     
-    parser = argparse.ArgumentParser(description="Extract elevation from DEM and add to points CSV.")
-    parser.add_argument('dem_file', type=str, help="Path to the DEM file")
-    parser.add_argument('csv_path', type=str, help="path to csv files")
-    parser.add_argument('output_path', type=str, help="path to save csv files")
-
-    # 當args並不是用命令列開啟時，透過輸入args自訂參數
-
-    if args is None:
-        args = parser.parse_args()
-    else:
-        args = parser.parse_args(args)
+    # 處理匯入的dem資料，並且提取出對應的高度
     
+    elev = extractElevation(dem_path,x_coords,y_coords)
+    print("DEM Extract successfully")
 
+    ## return elev
 
-    # read csv
-    x_coords,y_coords,elev,orignal_dem = csv_to_list(args.csv_path)
-    
-    ## return x_coords,y_coords,elev,orignal_dem
-
-    extracted_dem = extractElevation(args.dem_file,x_coords,y_coords)
-    
-    # return a list of extracted_dem
-
-    new_elev = convertToTerrain(elev,orignal_dem,extracted_dem)
+    new_alt = convertToTerrain(alt,elev)
+    print("new_alt revise successfully")
     #return a list of revised elev
+    return elev,new_alt
     
-    data = list(zip(x_coords, y_coords, elev, orignal_dem))
-    answer_df = pd.DataFrame(data, columns=['x_coords', 'y_coords', 'elev', 'orignal_dem'])
-
-    answer_df['elev'] = new_elev
-    answer_df['extracted_dem'] = extracted_dem 
-    output_path = args.output_path
-    answer_df .to_csv(output_path, index=False)
-    print(f"Output saved to {output_path}")
-
-
-if __name__ == "__main__":
-    main()
 
 
 
